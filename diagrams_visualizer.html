@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture & Technical Design Visualizer</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Mermaid JS -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom animations and smooth scroll */
+    html {
+      scroll-behavior: smooth;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+    .glass-panel-light {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .chip-hover {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .chip-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent !important;
+    }
+    .step-active {
+      border-color: #3b82f6 !important;
+      background-color: rgba(59, 130, 246, 0.15) !important;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white transition-colors duration-300" id="body-root">
+
+  <!-- Top Header Navigation -->
+  <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i data-lucide="layers" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-lg leading-tight tracking-tight">System Architecture & Technical Design</h1>
+          <p class="text-xs text-slate-400">Witness Statement NLP & Verification System</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <!-- Tab Buttons -->
+        <nav class="hidden md:flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
+          <button onclick="switchTab('arch')" id="tab-btn-arch" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-brand-600 text-white shadow-sm">
+            1. System Architecture
+          </button>
+          <button onclick="switchTab('seq')" id="tab-btn-seq" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200">
+            2. Sequence & Workflow
+          </button>
+          <button onclick="switchTab('stack')" id="tab-btn-stack" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200">
+            3. Technology Stack
+          </button>
+        </nav>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 text-slate-300 transition-colors" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" id="icon-sun" class="w-4 h-4 hidden"></i>
+          <i data-lucide="moon" id="icon-moon" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Tab Switcher -->
+  <div class="md:hidden border-b border-slate-800 bg-slate-900 px-4 py-2 flex space-x-2 overflow-x-auto">
+    <button onclick="switchTab('arch')" id="mob-btn-arch" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white whitespace-nowrap">1. Architecture</button>
+    <button onclick="switchTab('seq')" id="mob-btn-seq" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 whitespace-nowrap">2. Sequence</button>
+    <button onclick="switchTab('stack')" id="mob-btn-stack" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 whitespace-nowrap">3. Tech Stack</button>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- ==================== TAB 1: SYSTEM ARCHITECTURE ==================== -->
+    <section id="tab-arch" class="space-y-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20 uppercase tracking-wider">Architecture Diagram 1</span>
+          <h2 class="text-2xl font-display font-bold mt-2">Left-to-Right 4-Layer System Architecture</h2>
+          <p class="text-slate-400 text-sm mt-1">Illustrating Client, Presentation, Services, and Data & External layers with asynchronous task dispatch and graph persistence.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="copyMermaid('mermaid-code-arch')" class="inline-flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Copy Mermaid Code</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive Diagram Card -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <!-- Live Mermaid Diagram -->
+        <div class="overflow-x-auto py-4">
+          <div class="mermaid text-center">
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#1E293B',
+      'primaryTextColor': '#F8FAFC',
+      'primaryBorderColor': '#475569',
+      'lineColor': '#64748B',
+      'secondaryColor': '#334155',
+      'tertiaryColor': '#0F172A',
+      'clusterBkg': '#0F172A',
+      'clusterBorder': '#334155',
+      'fontSize': '14px'
+    }
+  }
+}%%
+flowchart LR
+    subgraph L1 ["Layer 1 — Client"]
+        Client["<b>Reviewer (Browser)</b>"]
+    end
+
+    subgraph L2 ["Layer 2 — Presentation"]
+        subgraph RF ["<b>React Frontend</b>"]
+            direction TB
+            RF1["Statement Entry/Upload"]
+            RF2["Timeline View"]
+            RF3["Map View"]
+        end
+    end
+
+    subgraph L3 ["Layer 3 — Services"]
+        direction LR
+        subgraph BoxA ["<b>Web/API Backend</b>"]
+            direction TB
+            A1["Auth (JWT)"]
+            A2["Incident & Statement CRUD"]
+            A3["Report Export"]
+        end
+
+        TQ["<b>Task Queue<br/>(Celery + Redis)</b>"]
+
+        subgraph BoxB ["<b>ML/NLP Service</b>"]
+            direction TB
+            B1["NER + Temporal + Spatial Extraction"]
+            B2["Claim Alignment"]
+            B3["Contradiction/Agreement Detection"]
+        end
+    end
+
+    subgraph L4 ["Layer 4 — Data & External"]
+        direction TB
+        Neo4j["<b>Neo4j Graph Database</b>"]
+        Geo["<b>Geocoding Service<br/>(Nominatim/OSM)</b>"]
+    end
+
+    %% Client to Presentation
+    Client -- "HTTPS" --> RF
+
+    %% Presentation to Services
+    RF -- "REST API calls" --> BoxA
+
+    %% Services Interconnections
+    BoxA -- "enqueue job" --> TQ
+    TQ -- "dispatch job" --> BoxB
+    BoxB -- "job result / webhook" --> BoxA
+
+    %% Services to Data & External
+    BoxA <-- "entities, events, claims, witnesses" --> Neo4j
+    BoxB <-- "entities, events, claims, witnesses" --> Neo4j
+    BoxB -- "resolve location text → coordinates" --> Geo
+
+    classDef clientBox fill:#1e293b,stroke:#475569,stroke-width:2px,color:#f8fafc,rx:8px,ry:8px;
+    classDef frontBox fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc,rx:8px,ry:8px;
+    classDef subItem fill:#334155,stroke:#475569,stroke-width:1px,color:#e2e8f0,rx:6px,ry:6px;
+    classDef serviceBox fill:#1e293b,stroke:#64748b,stroke-width:2px,color:#f8fafc,rx:8px,ry:8px;
+    classDef queueBox fill:#334155,stroke:#64748b,stroke-width:2px,color:#f8fafc,rx:8px,ry:8px;
+    classDef dataBox fill:#1e293b,stroke:#475569,stroke-width:2px,color:#f8fafc,rx:8px,ry:8px;
+    classDef geoBox fill:#334155,stroke:#475569,stroke-width:2px,color:#f8fafc,rx:8px,ry:8px;
+
+    class Client clientBox;
+    class RF1,RF2,RF3 subItem;
+    class A1,A2,A3,B1,B2,B3 subItem;
+    class TQ queueBox;
+    class Neo4j dataBox;
+    class Geo geoBox;
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer Breakdown Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+          <div class="flex items-center space-x-2 text-brand-400 font-semibold text-sm">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            <span>Layer 1 — Client</span>
+          </div>
+          <p class="text-xs text-slate-400">The browser interface where investigative reviewers inspect timelines, maps, and submit raw witness statements.</p>
+        </div>
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+          <div class="flex items-center space-x-2 text-cyan-400 font-semibold text-sm">
+            <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+            <span>Layer 2 — Presentation</span>
+          </div>
+          <p class="text-xs text-slate-400">React Frontend with dedicated sub-modules for statement upload, chronological timeline rendering, and geospatial mapping.</p>
+        </div>
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+          <div class="flex items-center space-x-2 text-indigo-400 font-semibold text-sm">
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+            <span>Layer 3 — Services</span>
+          </div>
+          <p class="text-xs text-slate-400">Decoupled API Backend and ML/NLP Services bridged by a Celery + Redis task queue for non-blocking extraction jobs.</p>
+        </div>
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+          <div class="flex items-center space-x-2 text-emerald-400 font-semibold text-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Layer 4 — Data & External</span>
+          </div>
+          <p class="text-xs text-slate-400">Neo4j primary graph storage for entities and contradictions, supplemented by Nominatim/OSM geocoding.</p>
+        </div>
+      </div>
+
+      <!-- Hidden mermaid code source for copy button -->
+      <textarea id="mermaid-code-arch" class="hidden">flowchart LR
+    subgraph L1 ["Layer 1 — Client"]
+        Client["<b>Reviewer (Browser)</b>"]
+    end
+    subgraph L2 ["Layer 2 — Presentation"]
+        subgraph RF ["<b>React Frontend</b>"]
+            direction TB
+            RF1["Statement Entry/Upload"]
+            RF2["Timeline View"]
+            RF3["Map View"]
+        end
+    end
+    subgraph L3 ["Layer 3 — Services"]
+        direction LR
+        subgraph BoxA ["<b>Web/API Backend</b>"]
+            direction TB
+            A1["Auth (JWT)"]
+            A2["Incident & Statement CRUD"]
+            A3["Report Export"]
+        end
+        TQ["<b>Task Queue<br/>(Celery + Redis)</b>"]
+        subgraph BoxB ["<b>ML/NLP Service</b>"]
+            direction TB
+            B1["NER + Temporal + Spatial Extraction"]
+            B2["Claim Alignment"]
+            B3["Contradiction/Agreement Detection"]
+        end
+    end
+    subgraph L4 ["Layer 4 — Data & External"]
+        direction TB
+        Neo4j["<b>Neo4j Graph Database</b>"]
+        Geo["<b>Geocoding Service<br/>(Nominatim/OSM)</b>"]
+    end
+    Client -- "HTTPS" --> RF
+    RF -- "REST API calls" --> BoxA
+    BoxA -- "enqueue job" --> TQ
+    TQ -- "dispatch job" --> BoxB
+    BoxB -- "job result / webhook" --> BoxA
+    BoxA <-- "entities, events, claims, witnesses" --> Neo4j
+    BoxB <-- "entities, events, claims, witnesses" --> Neo4j
+    BoxB -- "resolve location text → coordinates" --> Geo</textarea>
+    </section>
+
+    <!-- ==================== TAB 2: WORKFLOW / SEQUENCE ==================== -->
+    <section id="tab-seq" class="space-y-8 hidden">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">Sequence Diagram 2</span>
+          <h2 class="text-2xl font-display font-bold mt-2">End-to-End Witness Statement Processing</h2>
+          <p class="text-slate-400 text-sm mt-1">15 numbered sequence steps tracing submission, extraction, contradiction analysis, timeline/map rendering, and source text traceability.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="copyMermaid('mermaid-code-seq')" class="inline-flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Copy Mermaid Code</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive Sequence Controller -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Step-Through Controller:</span>
+            <div class="flex items-center space-x-2">
+              <button onclick="prevStep()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-40" id="btn-prev">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <span id="step-counter" class="text-sm font-mono font-medium px-2 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/30">Step 1 / 15</span>
+              <button onclick="nextStep()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300" id="btn-next">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <button onclick="resetStep()" class="text-xs font-medium text-slate-400 hover:text-slate-200 underline">Show Full Diagram View</button>
+        </div>
+
+        <!-- Live Step Highlight Explanation Box -->
+        <div id="step-detail-box" class="p-4 rounded-xl bg-slate-950/80 border border-brand-500/30 flex items-start space-x-4 transition-all">
+          <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-mono font-bold text-white shrink-0" id="step-number-badge">1</div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-brand-400" id="step-lifeline-label">Reviewer → Frontend</span>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700" id="step-type-badge">Solid Request</span>
+            </div>
+            <h4 class="text-base font-semibold mt-1" id="step-action-text">Submit witness statement</h4>
+            <p class="text-xs text-slate-400 mt-1" id="step-explanation-text">The Reviewer initiates the workflow by submitting a new witness statement text through the React Frontend.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Mermaid Sequence Diagram -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 shadow-2xl overflow-x-auto">
+        <div class="mermaid text-center">
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'actorBkg': '#1E293B',
+      'actorBorder': '#64748B',
+      'actorTextColor': '#F8FAFC',
+      'actorLineColor': '#64748B',
+      'signalColor': '#E2E8F0',
+      'signalTextColor': '#F8FAFC',
+      'noteBkgColor': '#334155',
+      'noteBorderColor': '#475569',
+      'noteTextColor': '#E2E8F0'
+    }
+  }
+}%%
+sequenceDiagram
+    autonumber
+    actor Reviewer as Reviewer
+    participant Frontend as Frontend
+    participant Backend as Web/API Backend
+    participant ML as ML/NLP Service
+    participant Database as Database
+
+    Reviewer->>Frontend: Submit witness statement
+    Frontend->>Backend: POST /incidents/{id}/statements
+    Backend->>Database: Store raw statement
+    Backend->>ML: Enqueue extraction job (async)
+    Backend-->>Frontend: 202 Accepted (job id)
+    ML->>ML: Run NER + temporal + spatial + event extraction
+    ML->>Database: Write structured claims
+    ML->>ML: Align claims across witnesses; detect contradictions/agreements
+    ML->>Database: Write contradiction/agreement results with source-span references
+    Frontend->>Backend: GET /incidents/{id}/timeline and /map (polling or on job-complete notification)
+    Backend->>Database: Read consolidated results
+    Backend-->>Frontend: Return timeline + map + flagged items
+    Frontend-->>Reviewer: Render timeline, map, and contradiction/agreement markers
+    Reviewer->>Frontend: Click a flagged item
+    Frontend-->>Reviewer: Show exact source statement text (traceability)
+        </div>
+      </div>
+
+      <!-- Complete Sequence Steps Table -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+        <div class="px-6 py-4 border-b border-slate-800 bg-slate-900">
+          <h3 class="font-display font-semibold text-sm">Sequence Lifecycle Table (Numbered Steps 1 – 15)</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 uppercase font-mono">
+                <th class="py-3 px-4 w-16 text-center">Step #</th>
+                <th class="py-3 px-4">Caller / Source</th>
+                <th class="py-3 px-4">Callee / Target</th>
+                <th class="py-3 px-4">Message / Action</th>
+                <th class="py-3 px-4">Arrow Type</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 font-mono" id="sequence-table-body">
+              <!-- Dynamically populated or static -->
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(1)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">1</td>
+                <td class="py-3 px-4">Reviewer</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Submit witness statement</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(2)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">2</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">POST /incidents/{id}/statements</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(3)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">3</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4">Database</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Store raw statement</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(4)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">4</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Enqueue extraction job (async)</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(5)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">5</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">202 Accepted (job id)</td>
+                <td class="py-3 px-4 text-slate-400">Dashed (Response)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(6)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">6</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Run NER + temporal + spatial + event extraction</td>
+                <td class="py-3 px-4 text-slate-400">Self-Loop Box</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(7)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">7</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4">Database</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Write structured claims</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(8)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">8</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Align claims across witnesses; detect contradictions/agreements</td>
+                <td class="py-3 px-4 text-slate-400">Self-Loop Box</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(9)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">9</td>
+                <td class="py-3 px-4">ML/NLP Service</td>
+                <td class="py-3 px-4">Database</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Write contradiction/agreement results with source-span references</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(10)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">10</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">GET /incidents/{id}/timeline and /map (polling or on job-complete notification)</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(11)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">11</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4">Database</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Read consolidated results</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(12)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">12</td>
+                <td class="py-3 px-4">Web/API Backend</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Return timeline + map + flagged items</td>
+                <td class="py-3 px-4 text-slate-400">Dashed (Response)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(13)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">13</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4">Reviewer</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Render timeline, map, and contradiction/agreement markers</td>
+                <td class="py-3 px-4 text-slate-400">Dashed (Response)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(14)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">14</td>
+                <td class="py-3 px-4">Reviewer</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Click a flagged item</td>
+                <td class="py-3 px-4 text-slate-400">Solid (Request)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition-colors" onclick="selectStep(15)">
+                <td class="py-3 px-4 text-center font-bold text-brand-400">15</td>
+                <td class="py-3 px-4">Frontend</td>
+                <td class="py-3 px-4">Reviewer</td>
+                <td class="py-3 px-4 text-slate-200 font-sans">Show exact source statement text (traceability)</td>
+                <td class="py-3 px-4 text-slate-400">Dashed (Response)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <textarea id="mermaid-code-seq" class="hidden">sequenceDiagram
+    autonumber
+    actor Reviewer as Reviewer
+    participant Frontend as Frontend
+    participant Backend as Web/API Backend
+    participant ML as ML/NLP Service
+    participant Database as Database
+
+    Reviewer->>Frontend: Submit witness statement
+    Frontend->>Backend: POST /incidents/{id}/statements
+    Backend->>Database: Store raw statement
+    Backend->>ML: Enqueue extraction job (async)
+    Backend-->>Frontend: 202 Accepted (job id)
+    ML->>ML: Run NER + temporal + spatial + event extraction
+    ML->>Database: Write structured claims
+    ML->>ML: Align claims across witnesses; detect contradictions/agreements
+    ML->>Database: Write contradiction/agreement results with source-span references
+    Frontend->>Backend: GET /incidents/{id}/timeline and /map (polling or on job-complete notification)
+    Backend->>Database: Read consolidated results
+    Backend-->>Frontend: Return timeline + map + flagged items
+    Frontend-->>Reviewer: Render timeline, map, and contradiction/agreement markers
+    Reviewer->>Frontend: Click a flagged item
+    Frontend-->>Reviewer: Show exact source statement text (traceability)</textarea>
+    </section>
+
+    <!-- ==================== TAB 3: TECH STACK ==================== -->
+    <section id="tab-stack" class="space-y-8 hidden">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">Tech Stack Diagram 3</span>
+          <h2 class="text-2xl font-display font-bold mt-2">Horizontal Layered Technology Stack</h2>
+          <p class="text-slate-400 text-sm mt-1">Five distinct horizontal bands with subtle background colors and rounded pills/chips for every technology layer.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="copyMermaid('mermaid-code-stack')" class="inline-flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Copy Mermaid Code</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom High-Fidelity Horizontal Layered Band UI -->
+      <div class="space-y-3">
+        <!-- Layer 1: Presentation (Light Blue) -->
+        <div class="rounded-2xl border border-sky-300/30 dark:border-sky-700/40 bg-sky-50 dark:bg-sky-950/40 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all">
+          <div class="md:w-64 shrink-0 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/20 dark:bg-sky-500/30 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xs">01</div>
+            <div>
+              <h3 class="font-display font-bold text-sky-900 dark:text-sky-200 text-base">Layer 1 — Presentation</h3>
+              <p class="text-xs text-sky-700 dark:text-sky-400">UI / Visualization</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 flex-1">
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-sky-900/80 text-sky-900 dark:text-sky-100 border border-sky-200 dark:border-sky-700 shadow-sm">React</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-sky-900/80 text-sky-900 dark:text-sky-100 border border-sky-200 dark:border-sky-700 shadow-sm">Tailwind CSS</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-sky-900/80 text-sky-900 dark:text-sky-100 border border-sky-200 dark:border-sky-700 shadow-sm">vis-timeline (or D3)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-sky-900/80 text-sky-900 dark:text-sky-100 border border-sky-200 dark:border-sky-700 shadow-sm">Leaflet + OpenStreetMap</span>
+          </div>
+        </div>
+
+        <!-- Layer 2: API / Backend (Light Green) -->
+        <div class="rounded-2xl border border-emerald-300/30 dark:border-emerald-700/40 bg-emerald-50 dark:bg-emerald-950/40 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all">
+          <div class="md:w-64 shrink-0 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 dark:bg-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-300 font-bold text-xs">02</div>
+            <div>
+              <h3 class="font-display font-bold text-emerald-900 dark:text-emerald-200 text-base">Layer 2 — API / Backend</h3>
+              <p class="text-xs text-emerald-700 dark:text-emerald-400">Core Services & Auth</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 flex-1">
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-700 shadow-sm">FastAPI or Node.js/Express</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-700 shadow-sm">JWT Auth</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-700 shadow-sm">REST API</span>
+          </div>
+        </div>
+
+        <!-- Layer 3: ML / NLP (Light Purple) -->
+        <div class="rounded-2xl border border-purple-300/30 dark:border-purple-700/40 bg-purple-50 dark:bg-purple-950/40 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all">
+          <div class="md:w-64 shrink-0 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/20 dark:bg-purple-500/30 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold text-xs">03</div>
+            <div>
+              <h3 class="font-display font-bold text-purple-900 dark:text-purple-200 text-base">Layer 3 — ML / NLP</h3>
+              <p class="text-xs text-purple-700 dark:text-purple-400">Information Extraction & Alignment</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 flex-1">
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-purple-900/80 text-purple-900 dark:text-purple-100 border border-purple-200 dark:border-purple-700 shadow-sm">spaCy</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-purple-900/80 text-purple-900 dark:text-purple-100 border border-purple-200 dark:border-purple-700 shadow-sm">Hugging Face Transformers (event/relation extraction)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-purple-900/80 text-purple-900 dark:text-purple-100 border border-purple-200 dark:border-purple-700 shadow-sm">sentence-transformers (semantic similarity)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-purple-900/80 text-purple-900 dark:text-purple-100 border border-purple-200 dark:border-purple-700 shadow-sm">NLI model (e.g. roberta-large-mnli)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-purple-900/80 text-purple-900 dark:text-purple-100 border border-purple-200 dark:border-purple-700 shadow-sm">dateparser (temporal normalization)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-purple-900/80 text-purple-900 dark:text-purple-100 border border-purple-200 dark:border-purple-700 shadow-sm">networkx (graph construction)</span>
+          </div>
+        </div>
+
+        <!-- Layer 4: Data (Light Orange) -->
+        <div class="rounded-2xl border border-orange-300/30 dark:border-orange-700/40 bg-orange-50 dark:bg-orange-950/40 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all">
+          <div class="md:w-64 shrink-0 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-orange-500/20 dark:bg-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-300 font-bold text-xs">04</div>
+            <div>
+              <h3 class="font-display font-bold text-orange-900 dark:text-orange-200 text-base">Layer 4 — Data</h3>
+              <p class="text-xs text-orange-700 dark:text-orange-400">Graph, Relational & Cache</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 flex-1">
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-orange-900/80 text-orange-900 dark:text-orange-100 border border-orange-200 dark:border-orange-700 shadow-sm">Neo4j (primary graph store)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-orange-900/80 text-orange-900 dark:text-orange-100 border border-orange-200 dark:border-orange-700 shadow-sm">PostgreSQL + PostGIS (fallback)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-orange-900/80 text-orange-900 dark:text-orange-100 border border-orange-200 dark:border-orange-700 shadow-sm">Redis (task queue backing store)</span>
+          </div>
+        </div>
+
+        <!-- Layer 5: Infrastructure (Light Gray) -->
+        <div class="rounded-2xl border border-slate-300/30 dark:border-slate-700/40 bg-slate-100 dark:bg-slate-900/60 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all">
+          <div class="md:w-64 shrink-0 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-slate-500/20 dark:bg-slate-500/30 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-xs">05</div>
+            <div>
+              <h3 class="font-display font-bold text-slate-900 dark:text-slate-200 text-base">Layer 5 — Infrastructure</h3>
+              <p class="text-xs text-slate-600 dark:text-slate-400">Container, CI & External APIs</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 flex-1">
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-sm">Docker Compose</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-sm">GitHub Actions (CI)</span>
+            <span class="chip-hover px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-sm">Nominatim (geocoding, external)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Mermaid Diagram for Tech Stack -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 shadow-2xl overflow-x-auto">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">Mermaid Layered Stack Chart</h4>
+        <div class="mermaid text-center">
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#1E293B',
+      'primaryTextColor': '#F8FAFC',
+      'primaryBorderColor': '#475569',
+      'lineColor': '#64748B',
+      'fontSize': '14px'
+    }
+  }
+}%%
+flowchart TB
+    subgraph L1 ["Layer 1 (top) — Presentation"]
+        direction LR
+        P1("React")
+        P2("Tailwind CSS")
+        P3("vis-timeline (or D3)")
+        P4("Leaflet + OpenStreetMap")
+    end
+
+    subgraph L2 ["Layer 2 — API / Backend"]
+        direction LR
+        B1("FastAPI or Node.js/Express")
+        B2("JWT Auth")
+        B3("REST API")
+    end
+
+    subgraph L3 ["Layer 3 — ML / NLP"]
+        direction LR
+        M1("spaCy")
+        M2("Hugging Face Transformers<br/>(event/relation extraction)")
+        M3("sentence-transformers<br/>(semantic similarity)")
+        M4("NLI model<br/>(e.g. roberta-large-mnli)")
+        M5("dateparser<br/>(temporal normalization)")
+        M6("networkx<br/>(graph construction)")
+    end
+
+    subgraph L4 ["Layer 4 — Data"]
+        direction LR
+        D1("Neo4j<br/>(primary graph store)")
+        D2("PostgreSQL + PostGIS<br/>(fallback)")
+        D3("Redis<br/>(task queue backing store)")
+    end
+
+    subgraph L5 ["Layer 5 (bottom) — Infrastructure"]
+        direction LR
+        I1("Docker Compose")
+        I2("GitHub Actions (CI)")
+        I3("Nominatim<br/>(geocoding, external)")
+    end
+
+    L1 ~~~ L2 ~~~ L3 ~~~ L4 ~~~ L5
+
+    style L1 fill:#e0f2fe,stroke:#38bdf8,stroke-width:2px,color:#0369a1
+    style L2 fill:#dcfce7,stroke:#4ade80,stroke-width:2px,color:#15803d
+    style L3 fill:#f3e8ff,stroke:#c084fc,stroke-width:2px,color:#6b21a8
+    style L4 fill:#ffedd5,stroke:#fb923c,stroke-width:2px,color:#c2410c
+    style L5 fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,color:#334155
+
+    classDef pill1 fill:#ffffff,stroke:#0284c7,stroke-width:1.5px,color:#0369a1,rx:20px,ry:20px;
+    classDef pill2 fill:#ffffff,stroke:#16a34a,stroke-width:1.5px,color:#15803d,rx:20px,ry:20px;
+    classDef pill3 fill:#ffffff,stroke:#7e22ce,stroke-width:1.5px,color:#6b21a8,rx:20px,ry:20px;
+    classDef pill4 fill:#ffffff,stroke:#ea580c,stroke-width:1.5px,color:#c2410c,rx:20px,ry:20px;
+    classDef pill5 fill:#ffffff,stroke:#475569,stroke-width:1.5px,color:#334155,rx:20px,ry:20px;
+
+    class P1,P2,P3,P4 pill1;
+    class B1,B2,B3 pill2;
+    class M1,M2,M3,M4,M5,M6 pill3;
+    class D1,D2,D3 pill4;
+    class I1,I2,I3 pill5;
+        </div>
+      </div>
+
+      <textarea id="mermaid-code-stack" class="hidden">flowchart TB
+    subgraph L1 ["Layer 1 (top) — Presentation"]
+        direction LR
+        P1("React")
+        P2("Tailwind CSS")
+        P3("vis-timeline (or D3)")
+        P4("Leaflet + OpenStreetMap")
+    end
+    subgraph L2 ["Layer 2 — API / Backend"]
+        direction LR
+        B1("FastAPI or Node.js/Express")
+        B2("JWT Auth")
+        B3("REST API")
+    end
+    subgraph L3 ["Layer 3 — ML / NLP"]
+        direction LR
+        M1("spaCy")
+        M2("Hugging Face Transformers<br/>(event/relation extraction)")
+        M3("sentence-transformers<br/>(semantic similarity)")
+        M4("NLI model<br/>(e.g. roberta-large-mnli)")
+        M5("dateparser<br/>(temporal normalization)")
+        M6("networkx<br/>(graph construction)")
+    end
+    subgraph L4 ["Layer 4 — Data"]
+        direction LR
+        D1("Neo4j<br/>(primary graph store)")
+        D2("PostgreSQL + PostGIS<br/>(fallback)")
+        D3("Redis<br/>(task queue backing store)")
+    end
+    subgraph L5 ["Layer 5 (bottom) — Infrastructure"]
+        direction LR
+        I1("Docker Compose")
+        I2("GitHub Actions (CI)")
+        I3("Nominatim<br/>(geocoding, external)")
+    end
+    L1 ~~~ L2 ~~~ L3 ~~~ L4 ~~~ L5
+    style L1 fill:#e0f2fe,stroke:#38bdf8,stroke-width:2px,color:#0369a1
+    style L2 fill:#dcfce7,stroke:#4ade80,stroke-width:2px,color:#15803d
+    style L3 fill:#f3e8ff,stroke:#c084fc,stroke-width:2px,color:#6b21a8
+    style L4 fill:#ffedd5,stroke:#fb923c,stroke-width:2px,color:#c2410c
+    style L5 fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px,color:#334155
+    classDef pill1 fill:#ffffff,stroke:#0284c7,stroke-width:1.5px,color:#0369a1,rx:20px,ry:20px;
+    classDef pill2 fill:#ffffff,stroke:#16a34a,stroke-width:1.5px,color:#15803d,rx:20px,ry:20px;
+    classDef pill3 fill:#ffffff,stroke:#7e22ce,stroke-width:1.5px,color:#6b21a8,rx:20px,ry:20px;
+    classDef pill4 fill:#ffffff,stroke:#ea580c,stroke-width:1.5px,color:#c2410c,rx:20px,ry:20px;
+    classDef pill5 fill:#ffffff,stroke:#475569,stroke-width:1.5px,color:#334155,rx:20px,ry:20px;
+    class P1,P2,P3,P4 pill1;
+    class B1,B2,B3 pill2;
+    class M1,M2,M3,M4,M5,M6 pill3;
+    class D1,D2,D3 pill4;
+    class I1,I2,I3 pill5;</textarea>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-800 bg-slate-900/50 mt-16 py-6 text-center text-xs text-slate-500">
+    <p>Professional Architecture Visualizer • Built with Mermaid.js & Tailwind CSS</p>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 px-4 py-3 rounded-xl bg-brand-600 text-white font-medium text-xs shadow-2xl transition-all duration-300 transform translate-y-12 opacity-0 pointer-events-none z-50">
+    Mermaid Markdown copied to clipboard!
+  </div>
+
+  <script>
+    // Initialize icons and Mermaid
+    lucide.createIcons();
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: 'loose',
+      theme: 'dark'
+    });
+
+    // Sequence lifecycle steps data
+    const sequenceSteps = [
+      { step: 1, lifeline: "Reviewer → Frontend", type: "Solid Request", action: "Submit witness statement", desc: "The Reviewer initiates the workflow by submitting a new witness statement text through the React Frontend." },
+      { step: 2, lifeline: "Frontend → Web/API Backend", type: "Solid Request", action: "POST /incidents/{id}/statements", desc: "The Frontend sends the raw witness statement to the REST API Backend." },
+      { step: 3, lifeline: "Web/API Backend → Database", type: "Solid Request", action: "Store raw statement", desc: "The API Backend persists the unedited raw statement text in the database for legal traceability." },
+      { step: 4, lifeline: "Web/API Backend → ML/NLP Service", type: "Solid Request (async)", action: "Enqueue extraction job (async)", desc: "A non-blocking job is enqueued via Celery + Redis to extract entities and temporal/spatial markers." },
+      { step: 5, lifeline: "Web/API Backend → Frontend", type: "Dashed Response", action: "202 Accepted (job id)", desc: "An immediate asynchronous acknowledgement containing the job ID is returned to the Frontend." },
+      { step: 6, lifeline: "ML/NLP Service → ML/NLP Service", type: "Self-Loop Box", action: "Run NER + temporal + spatial + event extraction", desc: "Internal NLP pipeline executes spaCy and Hugging Face Transformers for information extraction." },
+      { step: 7, lifeline: "ML/NLP Service → Database", type: "Solid Request", action: "Write structured claims", desc: "Extracted events, timestamps, and spatial locations are written as structured graph nodes in Neo4j." },
+      { step: 8, lifeline: "ML/NLP Service → ML/NLP Service", type: "Self-Loop Box", action: "Align claims across witnesses; detect contradictions/agreements", desc: "NLI models (roberta-large-mnli) evaluate claims from multiple witnesses for agreement or contradiction." },
+      { step: 9, lifeline: "ML/NLP Service → Database", type: "Solid Request", action: "Write contradiction/agreement results with source-span references", desc: "Consolidated agreement/contradiction results are stored with exact character span pointers." },
+      { step: 10, lifeline: "Frontend → Web/API Backend", type: "Solid Request", action: "GET /incidents/{id}/timeline and /map (polling or on job-complete notification)", desc: "Frontend fetches updated consolidated timeline and map data after job completion." },
+      { step: 11, lifeline: "Web/API Backend → Database", type: "Solid Request", action: "Read consolidated results", desc: "Backend queries the graph database for consolidated claims, entities, and flagged discrepancies." },
+      { step: 12, lifeline: "Web/API Backend → Frontend", type: "Dashed Response", action: "Return timeline + map + flagged items", desc: "Consolidated JSON payload with timeline events, GIS coordinates, and contradiction flags is sent to client." },
+      { step: 13, lifeline: "Frontend → Reviewer", type: "Dashed Response", action: "Render timeline, map, and contradiction/agreement markers", desc: "The React Frontend renders interactive vis-timeline charts, Leaflet maps, and discrepancy badges." },
+      { step: 14, lifeline: "Reviewer → Frontend", type: "Solid Request", action: "Click a flagged item", desc: "Reviewer clicks a contradiction marker or event card to inspect the underlying evidence." },
+      { step: 15, lifeline: "Frontend → Reviewer", type: "Dashed Response", action: "Show exact source statement text (traceability)", desc: "The UI opens an audit drawer highlighting the exact source sentence span in the witness statement." }
+    ];
+
+    let currentStepIndex = 0;
+
+    function selectStep(index) {
+      currentStepIndex = index - 1;
+      updateStepDisplay();
+    }
+
+    function nextStep() {
+      if (currentStepIndex < sequenceSteps.length - 1) {
+        currentStepIndex++;
+        updateStepDisplay();
+      }
+    }
+
+    function prevStep() {
+      if (currentStepIndex > 0) {
+        currentStepIndex--;
+        updateStepDisplay();
+      }
+    }
+
+    function resetStep() {
+      currentStepIndex = 0;
+      updateStepDisplay();
+    }
+
+    function updateStepDisplay() {
+      const s = sequenceSteps[currentStepIndex];
+      document.getElementById('step-counter').textContent = `Step ${s.step} / 15`;
+      document.getElementById('step-number-badge').textContent = s.step;
+      document.getElementById('step-lifeline-label').textContent = s.lifeline;
+      document.getElementById('step-type-badge').textContent = s.type;
+      document.getElementById('step-action-text').textContent = s.action;
+      document.getElementById('step-explanation-text').textContent = s.desc;
+
+      // Update button states
+      document.getElementById('btn-prev').disabled = currentStepIndex === 0;
+      document.getElementById('btn-next').disabled = currentStepIndex === sequenceSteps.length - 1;
+
+      // Highlight row in table
+      const rows = document.querySelectorAll('#sequence-table-body tr');
+      rows.forEach((row, i) => {
+        if (i === currentStepIndex) {
+          row.classList.add('bg-brand-500/20', 'border-l-4', 'border-brand-500');
+        } else {
+          row.classList.remove('bg-brand-500/20', 'border-l-4', 'border-brand-500');
+        }
+      });
+    }
+
+    // Tab switcher
+    function switchTab(tabId) {
+      const tabs = ['arch', 'seq', 'stack'];
+      tabs.forEach(id => {
+        const section = document.getElementById(`tab-${id}`);
+        const btn = document.getElementById(`tab-btn-${id}`);
+        const mobBtn = document.getElementById(`mob-btn-${id}`);
+
+        if (id === tabId) {
+          section.classList.remove('hidden');
+          if (btn) btn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-brand-600 text-white shadow-sm';
+          if (mobBtn) mobBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white whitespace-nowrap';
+        } else {
+          section.classList.add('hidden');
+          if (btn) btn.className = 'px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200';
+          if (mobBtn) mobBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 whitespace-nowrap';
+        }
+      });
+    }
+
+    // Copy Mermaid Code
+    function copyMermaid(elementId) {
+      const text = document.getElementById(elementId).value;
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('translate-y-12', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-12', 'opacity-0');
+        }, 2500);
+      });
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      const isDark = html.classList.contains('dark');
+      document.getElementById('icon-sun').classList.toggle('hidden', isDark);
+      document.getElementById('icon-moon').classList.toggle('hidden', !isDark);
+    }
+
+    // Initial select
+    updateStepDisplay();
+  </script>
+</body>
+</html>
