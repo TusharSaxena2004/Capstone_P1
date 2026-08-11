@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silent Witness - MVP Demo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Vis-Timeline CSS & JS -->
+    <link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #map { height: 100%; z-index: 1; }
+        #timeline { height: 100%; width: 100%; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: white;}
+        .highlight-contradiction { background-color: #fee2e2; border-left: 4px solid #ef4444; }
+        .highlight-agreement { background-color: #dcfce7; border-left: 4px solid #22c55e; }
+        /* Make Vis-Timeline look a bit more modern */
+        .vis-timeline { border: none !important; }
+        .vis-item { border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 12px; padding: 4px; border-color: #3b82f6; background-color: #eff6ff; color: #1e3a8a;}
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#151e2e' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 h-screen flex flex-col font-sans overflow-hidden">
+    
+    <!-- Navbar -->
+    <nav class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-md z-20">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-eye text-blue-400 text-2xl"></i>
+            <h1 class="text-xl font-bold tracking-wide">Silent Witness</h1>
+            <span class="bg-blue-600 text-xs px-2 py-1 rounded-full font-semibold ml-2">MVP Demo</span>
+        </div>
+        <div class="flex space-x-4">
+            <button class="text-gray-300 hover:text-white transition"><i class="fa-solid fa-download mr-1"></i> Export Report</button>
+            <button class="text-gray-300 hover:text-white transition"><i class="fa-solid fa-gear mr-1"></i> Settings</button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Left Sidebar: Ingestion -->
+        <div class="w-[30%] min-w-[320px] max-w-[450px] bg-white border-r border-gray-200 flex flex-col z-10 shadow-[4px_0_10px_rgba(0,0,0,0.03)]">
+            <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="font-semibold text-lg text-gray-700">1. Ingestion & Statements</h2>
+            </div>
+            
+            <div class="p-4 flex-1 overflow-y-auto space-y-6">
+                <!-- Add New Statement -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-1">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2 px-1">Add Witness Statement</label>
+                    <textarea class="w-full border border-gray-300 rounded-md p-3 text-sm focus:ring-blue-500 focus:border-blue-500 h-32 resize-none" placeholder="Paste witness testimony here..."></textarea>
+                    <div class="mt-3 flex justify-between items-center px-1">
+                        <button class="text-sm text-blue-600 hover:text-blue-800 transition font-medium"><i class="fa-solid fa-file-upload mr-1"></i> Bulk Upload</button>
+                        <button class="bg-slate-800 text-white px-4 py-2 rounded-md text-sm hover:bg-slate-700 shadow-sm transition font-medium">Extract Claims</button>
+                    </div>
+                </div>
+
+                <!-- Processed Statements List -->
+                <div>
+                    <div class="flex justify-between items-end mb-3">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Processed Sources</h3>
+                        <span class="text-xs font-semibold text-gray-400">3 files</span>
+                    </div>
+                    <div class="space-y-3">
+                        <!-- Statement 1 -->
+                        <div class="border border-gray-200 rounded-md p-3 cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition group">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-semibold text-sm text-gray-800 group-hover:text-blue-700">Witness A (Driver)</h4>
+                                <span class="text-[10px] uppercase tracking-wide font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">Processed</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 line-clamp-2">"I was driving north on Main St. when the red sedan ran the red light..."</p>
+                            <div class="mt-2 text-[10px] text-gray-400 flex gap-2">
+                                <span><i class="fa-solid fa-tags mr-1"></i> 5 Entities</span>
+                                <span><i class="fa-regular fa-clock mr-1"></i> 2 Times</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Statement 2 -->
+                        <div class="border border-gray-200 rounded-md p-3 cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition group">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-semibold text-sm text-gray-800 group-hover:text-blue-700">Witness B (Pedestrian)</h4>
+                                <span class="text-[10px] uppercase tracking-wide font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">Processed</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 line-clamp-2">"I heard a crash around 2:15 PM. A blue car was speeding..."</p>
+                            <div class="mt-2 text-[10px] text-gray-400 flex gap-2">
+                                <span><i class="fa-solid fa-tags mr-1"></i> 3 Entities</span>
+                                <span><i class="fa-regular fa-clock mr-1"></i> 1 Time</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Statement 3 -->
+                        <div class="border border-gray-200 rounded-md p-3 cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition group">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-semibold text-sm text-gray-800 group-hover:text-blue-700">Witness C (Store Owner)</h4>
+                                <span class="text-[10px] uppercase tracking-wide font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">Processed</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 line-clamp-2">"The red car swerved to avoid a dog at exactly 2:14 PM..."</p>
+                            <div class="mt-2 text-[10px] text-gray-400 flex gap-2">
+                                <span><i class="fa-solid fa-tags mr-1"></i> 4 Entities</span>
+                                <span><i class="fa-regular fa-clock mr-1"></i> 1 Time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content: Timeline, Map & Analysis -->
+        <div class="flex-1 flex flex-col bg-gray-100">
+            
+            <!-- Top Half: Visualizations -->
+            <div class="flex h-[55%] border-b border-gray-200">
+                <!-- Map -->
+                <div class="w-1/2 flex flex-col border-r border-gray-200 relative">
+                    <div class="bg-white p-3 border-b border-gray-200 flex justify-between items-center z-10 shadow-sm">
+                        <h2 class="font-semibold text-sm text-gray-700"><i class="fa-solid fa-map-location-dot text-indigo-500 mr-2"></i>Spatial Alignment</h2>
+                        <button class="text-xs text-gray-500 hover:text-gray-800"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+                    <div class="flex-1 w-full bg-gray-200 relative">
+                        <div id="map" class="absolute inset-0"></div>
+                    </div>
+                </div>
+                
+                <!-- Timeline -->
+                <div class="w-1/2 flex flex-col bg-white">
+                    <div class="bg-white p-3 border-b border-gray-200 flex justify-between items-center shadow-sm">
+                        <h2 class="font-semibold text-sm text-gray-700"><i class="fa-solid fa-timeline text-indigo-500 mr-2"></i>Temporal Alignment</h2>
+                        <button class="text-xs text-gray-500 hover:text-gray-800"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-center bg-gray-50 relative">
+                        <div id="timeline" class="absolute inset-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Half: Contradictions & Agreements -->
+            <div class="flex-1 bg-white flex flex-col overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 bg-gray-50">
+                    <button class="px-6 py-3 font-semibold text-sm text-red-600 border-b-2 border-red-600 bg-white flex-1 text-center flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Contradictions <span class="bg-red-100 text-red-700 py-0.5 px-2 rounded-full text-xs">2</span>
+                    </button>
+                    <button class="px-6 py-3 font-medium text-sm text-gray-500 hover:bg-gray-100 flex-1 text-center transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> Corroborations <span class="bg-green-100 text-green-700 py-0.5 px-2 rounded-full text-xs">3</span>
+                    </button>
+                    <button class="px-6 py-3 font-medium text-sm text-gray-500 hover:bg-gray-100 flex-1 text-center transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-list-ul"></i> All Claims <span class="bg-gray-200 text-gray-700 py-0.5 px-2 rounded-full text-xs">14</span>
+                    </button>
+                </div>
+                
+                <div class="overflow-y-auto p-6 space-y-5 bg-gray-50 flex-1">
+                    
+                    <!-- Contradiction Item 1 -->
+                    <div class="highlight-contradiction rounded-lg p-5 shadow-sm bg-white border border-red-100">
+                        <div class="flex items-start justify-between border-b border-red-100 pb-3 mb-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="bg-red-100 text-red-800 text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider">Attribute Mismatch</span>
+                                <h3 class="font-bold text-gray-800 text-lg">Vehicle Color</h3>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 border border-gray-200 rounded px-2 py-1 text-xs"><i class="fa-solid fa-code-compare mr-1"></i> Resolve</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded border border-gray-200 relative">
+                                <div class="absolute -left-2 top-4 w-1 h-8 bg-blue-400 rounded-r"></div>
+                                <p class="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wide">Witness A (Driver)</p>
+                                <p class="text-sm text-gray-700 italic leading-relaxed">"...when the <mark class="bg-red-200 px-1 font-semibold rounded">red sedan</mark> ran the red light..."</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded border border-gray-200 relative">
+                                <div class="absolute -left-2 top-4 w-1 h-8 bg-purple-400 rounded-r"></div>
+                                <p class="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wide">Witness B (Pedestrian)</p>
+                                <p class="text-sm text-gray-700 italic leading-relaxed">"A <mark class="bg-red-200 px-1 font-semibold rounded">blue car</mark> was speeding..."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contradiction Item 2 -->
+                    <div class="highlight-contradiction rounded-lg p-5 shadow-sm bg-white border border-orange-100 !border-l-orange-500" style="border-left-color: #f97316;">
+                        <div class="flex items-start justify-between border-b border-orange-100 pb-3 mb-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="bg-orange-100 text-orange-800 text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider">Temporal Mismatch</span>
+                                <h3 class="font-bold text-gray-800 text-lg">Time of Impact</h3>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 border border-gray-200 rounded px-2 py-1 text-xs"><i class="fa-solid fa-code-compare mr-1"></i> Resolve</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded border border-gray-200 relative">
+                                <div class="absolute -left-2 top-4 w-1 h-8 bg-purple-400 rounded-r"></div>
+                                <p class="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wide">Witness B (Pedestrian)</p>
+                                <p class="text-sm text-gray-700 italic leading-relaxed">"I heard a crash <mark class="bg-orange-200 px-1 font-semibold rounded">around 2:15 PM</mark>."</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded border border-gray-200 relative">
+                                <div class="absolute -left-2 top-4 w-1 h-8 bg-emerald-400 rounded-r"></div>
+                                <p class="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wide">Witness C (Store Owner)</p>
+                                <p class="text-sm text-gray-700 italic leading-relaxed">"...swerved to avoid a dog at <mark class="bg-orange-200 px-1 font-semibold rounded">exactly 2:14 PM</mark>."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Scripts to initialize map and timeline with dummy data -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize Map
+            const map = L.map('map').setView([40.7128, -74.0060], 17);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Map Markers with custom colors representing witnesses
+            const redIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+            const violetIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            L.marker([40.7128, -74.0060]).addTo(map)
+                .bindPopup('<b>Main St. Intersection</b><br>Impact Location (Agreed)').openPopup();
+            
+            L.marker([40.7132, -74.0065], {icon: violetIcon}).addTo(map)
+                .bindPopup('Witness B Vantage Point');
+                
+            L.marker([40.7125, -74.0055], {icon: redIcon}).addTo(map)
+                .bindPopup('Witness A Vantage Point');
+
+            // Initialize Timeline
+            const container = document.getElementById('timeline');
+            const items = new vis.DataSet([
+                {id: 1, content: 'C: Car swerves', start: '2024-05-10T14:14:00', style: 'border-left: 4px solid #10b981;'},
+                {id: 2, content: 'B: Hears crash (2:15)', start: '2024-05-10T14:15:00', style: 'background-color: #ffedd5; border-color: #f97316; border-left: 4px solid #a855f7; color: #9a3412;'},
+                {id: 3, content: 'A: Sedan runs light', start: '2024-05-10T14:14:30', style: 'border-left: 4px solid #3b82f6;'},
+                {id: 4, content: 'C: Crash (2:14)', start: '2024-05-10T14:14:05', style: 'background-color: #ffedd5; border-color: #f97316; border-left: 4px solid #10b981; color: #9a3412;'}
+            ]);
+            const options = {
+                height: '100%',
+                start: '2024-05-10T14:13:00',
+                end: '2024-05-10T14:16:00',
+                showCurrentTime: false,
+                stack: true
+            };
+            const timeline = new vis.Timeline(container, items, options);
+            
+            // Handle window resize for vis-timeline
+            window.addEventListener('resize', () => {
+                timeline.redraw();
+            });
+        });
+    </script>
+</body>
+</html>
