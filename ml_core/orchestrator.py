@@ -1,5 +1,6 @@
 import uuid
 import logging
+from dataclasses import asdict
 from typing import List, Dict, Any
 
 from ml_core.schema.models import Statement, Entity, EventTuple, Claim, DetectionResult
@@ -15,18 +16,58 @@ from ml_core.llm_client import call_local_llm
 
 logger = logging.getLogger(__name__)
 
-# Dummy NLI prediction function (if roberta is too heavy to load instantly, we simulate it for the demo)
-def dummy_nli_predict(text1: str, text2: str) -> float:
-    # If the texts are identical, no contradiction
-    if text1 == text2: return 0.0
-    # For demo purposes, we randomly assign a score or rely purely on rules
+def local_nli_predict(text1: str, text2: str) -> float:
+    """Predicts contradiction probability between two statements using the local SmolLM-3B."""
+    if not text1 or not text2:
+        return 0.0
+    t1 = text1.strip().lower()
+    t2 = text2.strip().lower()
+    if t1 == t2:
+        return 0.0
+    
+    prompt = f"""Compare these two eyewitness statements from different witnesses:
+Statement 1: "{text1}"
+Statement 2: "{text2}"
+
+Do these two statements factually contradict each other?
+(e.g. different car colors, conflicting times, opposing locations, or one stating an action happened while the other states it did not).
+Reply with strict JSON:
+{{"contradiction": true, "confidence": 0.95}} or {{"contradiction": false, "confidence": 0.1}}"""
+    try:
+        raw = call_local_llm(prompt)
+        import json
+        raw_str = raw.strip()
+        start = raw_str.find('{')
+        if start != -1:
+            data, _ = json.JSONDecoder().raw_decode(raw_str[start:])
+            if data.get("contradiction") is True:
+                return float(data.get("confidence", 0.95))
+            return 0.1
+        if '"contradiction": true' in raw_str.lower() or '"contradiction":true' in raw_str.lower():
+            return 0.95
+        return 0.1
+    except Exception as e:
+        logger.warning(f"Local NLI prediction failed: {e}")
     return 0.2
 
-# Dummy rationale generation
 def local_rationale_gen(prompt: str) -> str:
-    # In a full system, you could use call_local_llm here as well.
-    # We will use a fast fallback template for the demo.
-    return "The witnesses provided conflicting details regarding this event."
+    """Generates an impartial factual rationale using the local LLM."""
+    try:
+        res = call_local_llm(prompt)
+        import json, re
+        if "{" in res and "}" in res:
+            try:
+                m = re.search(r'\{.*\}', res, re.DOTALL)
+                if m:
+                    d = json.loads(m.group(0))
+                    if "rationale" in d:
+                        return d["rationale"]
+            except Exception:
+                pass
+        return res.strip().strip('"').strip("'")
+    except Exception as e:
+        logger.warning(f"Local rationale gen failed: {e}")
+        return "The witnesses provided conflicting details regarding this event."
 
 def analyze_incident(raw_statements: List[str]) -> Dict[str, Any]:
     """
@@ -85,14 +126,14 @@ def analyze_incident(raw_statements: List[str]) -> Dict[str, Any]:
     claim_clusters = align_claims(claims)
     
     # 3. Contradiction Detection
-    # Run the detection pipeline over the events
+    # Run the detection pipeline over the events strictly within aligned clusters
     detections = run_detection_pipeline(
         occurrences=all_occurrences,
         events=all_events,
-        nli_model_predict=dummy_nli_predict,
-        llm_rationale_gen=local_rationale_gen
+        nli_model_predict=local_nli_predict,
+        llm_rationale_gen=local_rationale_gen,
+        claim_clusters=claim_clusters
     )
-    
     # 4. Format Output Graph
     return {
         "status": "success",
@@ -103,7 +144,7 @@ def analyze_incident(raw_statements: List[str]) -> Dict[str, Any]:
             "total_claims": len(claims),
             "total_contradictions": len(detections)
         },
-        "entities": [e.__dict__ for e in all_entities],
-        "events": [ev.__dict__ for ev in all_events],
-        "contradictions": [d.__dict__ for d in detections]
+        "entities": [asdict(e) for e in all_entities],
+        "events": [asdict(ev) for ev in all_events],
+        "contradictions": [asdict(d) for d in detections]
     }

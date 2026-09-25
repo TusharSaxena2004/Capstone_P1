@@ -10,8 +10,11 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-# Defaults to the standard LM Studio local port
-LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "http://localhost:1234/v1")
+# Defaults to the reachable LM Studio IP/port provided by the user
+raw_url = os.getenv("LM_STUDIO_URL", "http://172.19.121.89:1234")
+if not raw_url.endswith("/v1"):
+    raw_url = raw_url.rstrip("/") + "/v1"
+LM_STUDIO_URL = raw_url
 
 try:
     client = OpenAI(base_url=LM_STUDIO_URL, api_key="lm-studio")

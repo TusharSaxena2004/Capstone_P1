@@ -12,7 +12,7 @@ class PydanticEventTuple(BaseModel):
     action: str = Field(..., description="The action being performed")
     object: Optional[str] = Field(None, description="The object receiving the action")
     is_explicit_denial: bool = Field(False, description="True if the text explicitly states an event did NOT happen")
-    source_span: Tuple[int, int] = Field(..., description="The character span of the extracted event in the text")
+    source_span: Optional[Tuple[int, int]] = Field(default=(0, 0), description="The character span of the extracted event in the text")
 
 def extract_events_llm(statement: Statement, llm_call: Callable[[str, Optional[str]], str], sample_count: int = 3) -> Tuple[List[EventTuple], List[EventOccurrence]]:
     """
@@ -47,14 +47,28 @@ def extract_events_llm(statement: Statement, llm_call: Callable[[str, Optional[s
                     
         is_low_confidence = agreements < (len(samples) // 2) and len(samples) > 1
         
-        # Determine text snippet safely
+        # Determine text representation and span safely
+        event_summary = f"{base_event.subject or ''} {base_event.action} {base_event.object or ''}".strip()
+        
         start, end = base_event.source_span
-        snippet = statement.text[start:end] if start < len(statement.text) else ""
+        if (end - start) < 4 or start >= end or end > len(statement.text):
+            action_lower = base_event.action.lower() if base_event.action else ""
+            stmt_lower = statement.text.lower()
+            idx = stmt_lower.find(action_lower) if action_lower else -1
+            if idx != -1:
+                start = idx
+                end = idx + len(base_event.action)
+            else:
+                start = 0
+                end = min(len(statement.text), 50)
+        
+        resolved_span = (start, end)
+        snippet = event_summary if event_summary else statement.text[start:end]
         
         if base_event.is_explicit_denial:
             final_occurrences.append(EventOccurrence(
                 source_statement_id=statement.id,
-                source_span=base_event.source_span,
+                source_span=resolved_span,
                 text=snippet,
                 event_type=base_event.action,
                 occurred=False
@@ -62,7 +76,7 @@ def extract_events_llm(statement: Statement, llm_call: Callable[[str, Optional[s
         else:
             final_events.append(EventTuple(
                 source_statement_id=statement.id,
-                source_span=base_event.source_span,
+                source_span=resolved_span,
                 text=snippet,
                 subject=base_event.subject,
                 action=base_event.action,
@@ -77,23 +91,48 @@ def extract_events_llm(statement: Statement, llm_call: Callable[[str, Optional[s
 
 
 def _extract_with_retry(statement: Statement, llm_call: Callable[[str, Optional[str]], str]) -> Optional[List[PydanticEventTuple]]:
-    prompt = f"""Extract all events from the following eyewitness testimony.
+    prompt = f"""Extract all events/actions from the following eyewitness testimony.
 Return the result as a strict JSON array of objects. Do not wrap in markdown or add explanations.
-Schema per object:
-- "subject": (string) Who is acting.
-- "action": (string) What they did.
-- "object": (string) The target of the action.
-- "is_explicit_denial": (boolean) True if they explicitly state it did NOT happen.
+
+Schema:
+- "subject": (string) Who/what is performing the action.
+- "action": (string) The verb or action (e.g. "enter", "speed", "shoot", "carry").
+- "object": (string) What or who was targeted / affected.
+- "is_explicit_denial": (boolean) Set to true ONLY if the witness explicitly says the action did NOT occur (e.g. "did not enter", "never ran").
 - "source_span": (array of 2 ints) [0, 0]
 
-Testimony: "{statement.text}"
+Example Input: "The suspect entered the bank. The security guard did not fire."
+Example Output:
+[
+  {{"subject": "The suspect", "action": "entered", "object": "the bank", "is_explicit_denial": false, "source_span": [0, 0]}},
+  {{"subject": "The security guard", "action": "fire", "object": "", "is_explicit_denial": true, "source_span": [0, 0]}}
+]
+
+Testimony to extract:
+"{statement.text}"
+
 JSON Output:"""
     error_msg = None
     
     for attempt in range(2):
         try:
             response_text = llm_call(prompt, error_msg)
-            data = json.loads(response_text)
+            raw = response_text.strip()
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0].strip()
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0].strip()
+                
+            start = raw.find('[')
+            end = raw.rfind(']')
+            if start != -1 and end != -1 and end > start:
+                raw = raw[start:end+1]
+                
+            import re
+            raw = re.sub(r',\s*\]', ']', raw)
+            raw = re.sub(r',\s*\}', '}', raw)
+            
+            data = json.loads(raw)
             if not isinstance(data, list):
                 raise ValueError("Output must be a JSON list")
                 

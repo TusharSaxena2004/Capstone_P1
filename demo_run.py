@@ -20,19 +20,19 @@ def extract_witness_statements(file_path: Path) -> list:
     return statements
 
 def main():
-    print("--- Silent Witness Local Demo ---")
+    print("--- Silent Witness Local Demo ---", flush=True)
     
     # Pick one of the generated Indian-context transcripts
     target_file = TRANSCRIPTS_DIR / "marine_drive_hit_run.txt"
-    print(f"Loading {target_file.name}...")
+    print(f"Loading {target_file.name}...", flush=True)
     
     statements = extract_witness_statements(target_file)
     
-    # For a quick demo, we'll just send the first 4 witnesses so we don't wait too long
-    # for the local 3B model to process all 20.
-    demo_statements = statements[:4]
+    # Default to 2 intensely contradictory witnesses (Witness 1: Black SUV vs Witness 2: White Sedan)
+    # for a fast, crisp 10-second live demonstration!
+    demo_statements = statements[:2]
     
-    print(f"Found {len(statements)} testimonies. Sending first {len(demo_statements)} to FastAPI backend...")
+    print(f"Loaded {len(statements)} testimonies. Sending first {len(demo_statements)} contradictory testimonies to backend...", flush=True)
     
     payload = {"statements": demo_statements}
     

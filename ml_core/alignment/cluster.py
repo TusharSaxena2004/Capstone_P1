@@ -35,10 +35,10 @@ def align_claims(claims: List[Claim]) -> List[List[Claim]]:
     embeddings = model.encode(texts)
     
     # 2. Cluster using Agglomerative Clustering
-    # distance < 0.35 implies cosine similarity > 0.65
+    # distance <= 0.65 groups related incident movements/actions across witnesses
     clusterer = AgglomerativeClustering(
         n_clusters=None, 
-        distance_threshold=0.35, 
+        distance_threshold=0.65, 
         metric='cosine', 
         linkage='average'
     )

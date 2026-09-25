@@ -35,6 +35,12 @@ def apply_negation_scoping(statement: Statement, events: List[EventTuple]) -> Li
                 for aux in [c for c in etok.children if c.dep_ in ("aux", "auxpass")]:
                     neg_count += sum(1 for c in aux.children if c.dep_ == "neg")
                     
+        # Fallback for spoken contractions / immediate window
+        if neg_count == 0:
+            surrounding = statement.text[max(0, start_char - 15):min(len(statement.text), end_char + 15)].lower()
+            if any(w in surrounding.split() for w in ["not", "didn't", "didnt", "never", "wasn't", "wasnt", "cannot", "can't"]):
+                neg_count = 1
+
         # If odd number of negations attached to the event tokens, it is negated
         if neg_count % 2 != 0:
             event.negated = True

@@ -1,0 +1,801 @@
+{
+  "status": "success",
+  "metrics": {
+    "total_statements": 5,
+    "total_entities": 5,
+    "total_events": 18,
+    "total_claims": 18,
+    "total_contradictions": 17
+  },
+  "entities": [
+    {
+      "source_statement_id": "stmt_0",
+      "source_span": [
+        68,
+        75
+      ],
+      "text": "Tanishq",
+      "label": "PERSON",
+      "attributes": {},
+      "entity_cluster_id": "476de302-8874-4c1a-ad0f-ed212552f7f0"
+    },
+    {
+      "source_statement_id": "stmt_0",
+      "source_span": [
+        88,
+        95
+      ],
+      "text": "MG Road",
+      "label": "LOCATION",
+      "attributes": {},
+      "entity_cluster_id": "a2099759-8c31-4365-920e-e5cbe0097d88"
+    },
+    {
+      "source_statement_id": "stmt_1",
+      "source_span": [
+        33,
+        40
+      ],
+      "text": "Tanishq",
+      "label": "PERSON",
+      "attributes": {},
+      "entity_cluster_id": "1b59833b-f6c3-4496-9a2e-5e4af9d2b5f3"
+    },
+    {
+      "source_statement_id": "stmt_2",
+      "source_span": [
+        22,
+        29
+      ],
+      "text": "MG Road",
+      "label": "LOCATION",
+      "attributes": {},
+      "entity_cluster_id": "2582f533-6fb2-4b53-b15a-296980225c5f"
+    },
+    {
+      "source_statement_id": "stmt_3",
+      "source_span": [
+        20,
+        27
+      ],
+      "text": "MG Road",
+      "label": "LOCATION",
+      "attributes": {},
+      "entity_cluster_id": "c9c972c2-7204-4821-8e0b-ce57b36c463e"
+    }
+  ],
+  "events": [
+    {
+      "source_statement_id": "stmt_0",
+      "source_span": [
+        28,
+        41
+      ],
+      "text": "I was stationed by the glass doors of the Tanishq showroom on MG Road",
+      "subject": "I",
+      "action": "was stationed",
+      "object": "by the glass doors of the Tanishq showroom on MG Road",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_0",
+      "source_span": [
+        116,
+        130
+      ],
+      "text": "Two masked robbers stormed inside",
+      "subject": "Two masked robbers",
+      "action": "stormed inside",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_0",
+      "source_span": [
+        152,
+        159
+      ],
+      "text": "The robbers ordered all customers to lie flat on the floor",
+      "subject": "The robbers",
+      "action": "ordered",
+      "object": "all customers to lie flat on the floor",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_0",
+      "source_span": [
+        7,
+        14
+      ],
+      "text": "The primary robber was wearing a dark leather jacket and blue jeans",
+      "subject": "The primary robber",
+      "action": "was wearing",
+      "object": "a dark leather jacket and blue jeans",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_1",
+      "source_span": [
+        7,
+        10
+      ],
+      "text": "I run",
+      "subject": "I",
+      "action": "run",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_1",
+      "source_span": [
+        117,
+        125
+      ],
+      "text": "three robbers sprinted out of the store entrance carrying heavy duffel bags",
+      "subject": "three robbers",
+      "action": "sprinted",
+      "object": "out of the store entrance carrying heavy duffel bags",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_1",
+      "source_span": [
+        4,
+        14
+      ],
+      "text": "the robbers pushed past frightened pedestrians on the sidewalk as people screamed for police assistance",
+      "subject": "the robbers",
+      "action": "pushed",
+      "object": "past frightened pedestrians on the sidewalk as people screamed for police assistance",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_2",
+      "source_span": [
+        81,
+        88
+      ],
+      "text": "the commotion erupted",
+      "subject": "the commotion",
+      "action": "erupted",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_2",
+      "source_span": [
+        0,
+        50
+      ],
+      "text": "the primary robber wore a dark leather jacket",
+      "subject": "the primary robber",
+      "action": "wore",
+      "object": "a dark leather jacket",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_2",
+      "source_span": [
+        147,
+        151
+      ],
+      "text": "the primary robber fled",
+      "subject": "the primary robber",
+      "action": "fled",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_2",
+      "source_span": [
+        7,
+        11
+      ],
+      "text": "the primary robber revved a motorcycle",
+      "subject": "the primary robber",
+      "action": "revved",
+      "object": "a motorcycle",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_2",
+      "source_span": [
+        0,
+        50
+      ],
+      "text": "the primary robber headed",
+      "subject": "the primary robber",
+      "action": "headed",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_3",
+      "source_span": [
+        2,
+        13
+      ],
+      "text": "I was walking along MG Road",
+      "subject": "I",
+      "action": "was walking",
+      "object": "along MG Road",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_3",
+      "source_span": [
+        45,
+        51
+      ],
+      "text": "the thieves dashed",
+      "subject": "the thieves",
+      "action": "dashed",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_3",
+      "source_span": [
+        99,
+        110
+      ],
+      "text": "The primary robber was wearing a bright red hoodie with beige cargo pants",
+      "subject": "The primary robber",
+      "action": "was wearing",
+      "object": "a bright red hoodie with beige cargo pants",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_4",
+      "source_span": [
+        6,
+        14
+      ],
+      "text": "I securing the cash register",
+      "subject": "I",
+      "action": "securing",
+      "object": "the cash register",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_4",
+      "source_span": [
+        95,
+        99
+      ],
+      "text": "The thieves took fifty lakhs worth of diamond necklaces and luxury watches from the vault counters",
+      "subject": "The thieves",
+      "action": "took",
+      "object": "fifty lakhs worth of diamond necklaces and luxury watches from the vault counters",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    },
+    {
+      "source_statement_id": "stmt_4",
+      "source_span": [
+        187,
+        217
+      ],
+      "text": "I emergency sirens began blaring",
+      "subject": "I",
+      "action": "emergency sirens began blaring",
+      "object": "",
+      "time_ref": null,
+      "location_ref": null,
+      "confidence": 1.0,
+      "low_confidence": false,
+      "negated": false
+    }
+  ],
+  "contradictions": [
+    {
+      "claim_ids": [
+        "ed0a5bf3-c93e-47cf-8d48-3074a8c499bd",
+        "a87cc274-8937-4176-ba7c-0a5d36aaa1c1"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement specifies being stationed by glass doors of a Tanishq showroom, while the second only mentions walking along MG Road without mentioning any specific location or activity.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            28,
+            41
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            2,
+            13
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "e0610ae4-8c73-42d7-b3e1-cd565f7962d9",
+        "a1a7bf84-08cc-4c50-9c96-6b6a7cd2b56d"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "Statement 1 describes two masked robbers entering a location while Statement 2 mentions three robbers sprinting out carrying duffel bags.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            116,
+            130
+          ]
+        ],
+        [
+          "stmt_1",
+          [
+            117,
+            125
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "e0610ae4-8c73-42d7-b3e1-cd565f7962d9",
+        "0aa706f6-290e-45a9-937c-4cd3f1d84918"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "In Statement 1, it is stated that two masked robbers stormed inside; in contrast, Statement 2 mentions only one robber fleeing.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            116,
+            130
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            147,
+            151
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "e0610ae4-8c73-42d7-b3e1-cd565f7962d9",
+        "1518c7f8-202b-44f1-8a78-fe91ea6824bb"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement mentions two masked robbers storming in while the second specifies that the primary robber was revving a motorcycle.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            116,
+            130
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            7,
+            11
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "1434a336-12f9-42e0-bcae-d5586cac3313",
+        "a1a7bf84-08cc-4c50-9c96-6b6a7cd2b56d"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The primary robber in Statement 1 was described as wearing a dark leather jacket and blue jeans, while Statement 2 mentions three robbers sprinting out of the store entrance carrying heavy duffel bags without specifying attire.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_1",
+          [
+            117,
+            125
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "1434a336-12f9-42e0-bcae-d5586cac3313",
+        "0aa706f6-290e-45a9-937c-4cd3f1d84918"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement specifies the attire of the primary robber as a dark leather jacket and blue jeans while the second only mentions that they fled.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            147,
+            151
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "1434a336-12f9-42e0-bcae-d5586cac3313",
+        "1518c7f8-202b-44f1-8a78-fe91ea6824bb"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement describes the appearance of the primary robber as wearing a dark leather jacket and blue jeans, while the second statement mentions that they revved a motorcycle.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            7,
+            11
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "1434a336-12f9-42e0-bcae-d5586cac3313",
+        "1e404fa3-6313-4149-9d35-36b9b156b85e"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement specifies that the primary robber wore a dark leather jacket and blue jeans, while the second statement does not mention any clothing details.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            0,
+            50
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "1434a336-12f9-42e0-bcae-d5586cac3313",
+        "a1751bad-f25f-45ee-9d16-1f824411f3bd"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement specifies the attire of the primary robber as wearing a dark leather jacket and blue jeans, while the second statement only mentions that the thieves dashed without providing any details about their appearance.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            45,
+            51
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "1434a336-12f9-42e0-bcae-d5586cac3313",
+        "cbe949c6-bc7f-450f-836b-a2967ae91035"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The primary robber in Statement 1 wore a dark leather jacket and blue jeans while in Statement 2 they were wearing a bright red hoodie with beige cargo pants",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            99,
+            110
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "a1a7bf84-08cc-4c50-9c96-6b6a7cd2b56d",
+        "0aa706f6-290e-45a9-937c-4cd3f1d84918"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "Statement 1 describes three robbers sprinting out of a store with heavy duffel bags while Statement 2 mentions only one robber fleeing",
+      "source_span": [
+        [
+          "stmt_1",
+          [
+            117,
+            125
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            147,
+            151
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "a1a7bf84-08cc-4c50-9c96-6b6a7cd2b56d",
+        "1e404fa3-6313-4149-9d35-36b9b156b85e"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "Statement 1 describes robbers sprinting out of a store with heavy duffel bags while Statement 2 only mentions one robber heading somewhere",
+      "source_span": [
+        [
+          "stmt_1",
+          [
+            117,
+            125
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            0,
+            50
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "a1a7bf84-08cc-4c50-9c96-6b6a7cd2b56d",
+        "a1751bad-f25f-45ee-9d16-1f824411f3bd"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "Statement 1 describes robbers sprinting with heavy duffel bags out of a store entrance while Statement 2 states that thieves dashed without specifying their load.",
+      "source_span": [
+        [
+          "stmt_1",
+          [
+            117,
+            125
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            45,
+            51
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "26573a45-3cdb-4cc8-a34c-13ac915630b7",
+        "cbe949c6-bc7f-450f-836b-a2967ae91035"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The primary robber in Statement 1 wore a dark leather jacket while in Statement 2 they were wearing a bright red hoodie with beige cargo pants.",
+      "source_span": [
+        [
+          "stmt_2",
+          [
+            0,
+            50
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            99,
+            110
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "0aa706f6-290e-45a9-937c-4cd3f1d84918",
+        "a1751bad-f25f-45ee-9d16-1f824411f3bd"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement specifies that the primary robber fled, while the second states that all thieves dashed.",
+      "source_span": [
+        [
+          "stmt_2",
+          [
+            147,
+            151
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            45,
+            51
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "claim_3",
+        "claim_9"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The first statement specifies that the primary robber wore a dark leather jacket and blue jeans while fleeing in the second.",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_2",
+          [
+            147,
+            151
+          ]
+        ]
+      ]
+    },
+    {
+      "claim_ids": [
+        "claim_3",
+        "claim_14"
+      ],
+      "type": "semantic",
+      "verdict": "contradiction",
+      "confidence": 0.95,
+      "rationale": "The primary robber in Statement 1 wore a dark leather jacket and blue jeans while in Statement 2 they were wearing a bright red hoodie with beige cargo pants",
+      "source_span": [
+        [
+          "stmt_0",
+          [
+            7,
+            14
+          ]
+        ],
+        [
+          "stmt_3",
+          [
+            99,
+            110
+          ]
+        ]
+      ]
+    }
+  ]
+}
