@@ -1,7 +1,10 @@
 import json
+import os
 
 # Simulate what server.py does in create_incident
-with open("C:/Users/manik/Capstone_P1/theft_case_output.json", "r") as f:
+base_dir = os.path.dirname(os.path.abspath(__file__))
+theft_path = os.path.join(base_dir, "theft_case_output.json")
+with open(theft_path, "r", encoding="utf-8") as f:
     results = json.load(f)
 
 # Mock statements that would have produced this (since we don't have the original text)

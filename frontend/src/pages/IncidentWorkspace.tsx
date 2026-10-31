@@ -346,8 +346,10 @@ export const IncidentWorkspace: React.FC = () => {
                     {isExtracting ? 'Running ML Pipeline…' : 'Extract & align claims'}
                   </button>
                   <div className="flex items-center gap-3 p-4 bg-[var(--bg-surface-2)] border border-[var(--border-hairline)] rounded text-[13px] text-[var(--text-secondary)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-corroborate)] shrink-0" />
-                    Connected to Local ML Pipeline — Fallback: theft_case_output.json
+                    <span className={`w-1.5 h-1.5 rounded-full ${summary?.status === 'Demo (Fallback)' ? 'bg-amber-400' : 'bg-[var(--status-corroborate)]'} shrink-0`} />
+                    {summary?.status === 'Demo (Fallback)'
+                      ? 'Local ML Pipeline Unavailable — Demo Fallback Active'
+                      : 'Connected to Local ML Pipeline & SQLite Database'}
                   </div>
                 </div>
                 <div className="bg-[var(--bg-surface)] border border-[var(--border-hairline)] rounded-lg p-6">
@@ -437,10 +439,20 @@ export const IncidentWorkspace: React.FC = () => {
                         </div>
                         <div className="bg-[var(--bg-surface)] border border-[var(--border-hairline)] rounded-lg p-5 mb-4">
                           <h2 className="text-[11px] text-[var(--text-muted)] font-semibold mb-3 uppercase tracking-[0.3px]">Contradiction Likelihood</h2>
-                          <div className="h-1.5 bg-[var(--bg-base)] rounded-full overflow-hidden mb-2">
-                            <div className="h-full bg-[var(--status-contradict)]" style={{ width: '95%' }} />
-                          </div>
-                          <p className="text-[11px] font-mono text-[var(--text-muted)]">p=0.95 · SmolLM-3B NLI + isotonic calibration</p>
+                          {(() => {
+                            const conf = typeof c.confidence === 'number' ? Math.min(Math.max(c.confidence, 0), 1) : 0.95;
+                            const pct = Math.round(conf * 100);
+                            return (
+                              <>
+                                <div className="h-1.5 bg-[var(--bg-base)] rounded-full overflow-hidden mb-2">
+                                  <div className="h-full bg-[var(--status-contradict)] transition-all duration-300" style={{ width: `${pct}%` }} />
+                                </div>
+                                <p className="text-[11px] font-mono text-[var(--text-muted)]">
+                                  p={conf.toFixed(2)} · Confidence ({pct}%) · Local NLI
+                                </p>
+                              </>
+                            );
+                          })()}
                         </div>
                         <div className="bg-[var(--bg-surface)] border border-[var(--border-hairline)] rounded-lg p-5">
                           <p className="text-[13px] text-[var(--text-muted)] border-l-2 border-[var(--accent)] pl-3 leading-[1.6]">
