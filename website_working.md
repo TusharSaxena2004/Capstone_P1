@@ -23,7 +23,7 @@ The backend uses a monolithic architecture, meaning `server.py` hosts both the W
 
 1. Open Terminal 1 and navigate to the project root:
    ```bash
-   cd C:\Users\manik\Capstone_P1
+   cd Capstone_P1
    ```
 2. Create and activate a Python virtual environment:
    ```bash
@@ -44,7 +44,7 @@ The backend uses a monolithic architecture, meaning `server.py` hosts both the W
 ### Step 2B: Setup the Frontend (React + Vite)
 1. Open Terminal 2 and navigate to the frontend directory:
    ```bash
-   cd C:\Users\manik\Capstone_P1\frontend
+   cd frontend
    ```
 2. Install the Node modules:
    ```bash
